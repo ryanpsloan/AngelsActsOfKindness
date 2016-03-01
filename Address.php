@@ -217,4 +217,24 @@ class Address
         //remove from quarantine and assign
         $this->zipId = $newZipId;
     }
+
+    /**
+     * sets the value of state
+     *
+     * @param string $newState
+     * @throws UnexpectedValueException if not a string
+     */
+
+    public function setState($newState){
+        //trim the string
+        $newState = trim($newState);
+
+        //sanitize the string
+        if($newState = filter_var($newState,FILTER_SANITIZE_STRING) == false){
+            thrown (new UnexpectedValueException("state $newState is not a string"));
+        }
+
+        //remove from quarantine and assign
+        $this->state = $newState;
+    }
 }
