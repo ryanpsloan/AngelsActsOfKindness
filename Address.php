@@ -311,6 +311,7 @@ class Address
             throw(new mysqli_sql_exception("Unable to Prepare Statement"));
         }
 
+        //bind the member variables to the place holders in the template
         $wasClean = $statement->bind_param("i",$this->addressId);
         if($wasClean === false){
             throw(new mysqli_sql_exception("Unable to bind parameters"));
@@ -328,34 +329,118 @@ class Address
      * @param resource $mysqli pointer to mySQL connection, by reference
      * @throws mysqli_sql_exception when mySQL related error occurs
      */
-    public function update(&$mysqli){
+    public function update(&$mysqli)
+    {
         //handle degenerate cases
-        if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli"){
+        if (gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli") {
             throw(new mysqli_sql_exception("input is not a mysqli object"));
         }
 
         //enforce that the id is not null (don't update an address that hasn't been inserted)
-        if($this->addressId === null){
+        if ($this->addressId === null) {
             throw(new mysqli_sql_exception("Unable to update an address that doesn't exist"));
         }
 
         //create query template
         $query = "UPDATE address SET addressLine = ?, cityId = ?, state = ?, zipId = ? WHERE addressId = ?";
         $statement = $mysqli->prepare($query);
-        if($statement === false){
+        if ($statement === false) {
             throw(new mysqli_sql_exception("Unable to prepare statement"));
 
         }
 
         //bind the member variables to the place holders in the template
         $wasClean = $statement->bind_param("sisii", $this->addressLine, $this->cityId, $this->state, $this->zipId, $this->addressId);
-        if($wasClean === false){
+        if ($wasClean === false) {
             throw(new mysqli_sql_exception("Unable to bind parameters"));
         }
 
         //execute the statement
-        if($statement->execute() === false){
+        if ($statement->execute() === false) {
             throw(new mysqli_sql_exception("Unable to execute mySQL statment"));
         }
     }
+    /**
+     * gets the Address by addressId the primary key
+     *
+     * @param resource $mysqli pointer to mySQL connection by reference
+     * @param in $addressId primary key to search for
+     * @return mixed Address found or null if not found
+     * @throws mysqli_sql_exception when mySQL related error occurs
+     * @throws UnexpectedValueException if addressId is not an int
+     * @throws RangeException if addressId is not positive
+     *
+     */
+
+    public static function getAddressByAddressId(&$mysqli, $addressId){
+        //handle degenerate cases
+        if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli"){
+            throw(new mysqli_sql_exception("input is not a mysqli object"));
+        }
+
+        //ensure the addressId is an integer
+        if(filter_var($addressId, FILTER_VALIDATE_INT) === false){
+            throw(new UnexpectedValueException("address id $addressId is not an integer"));
+        }
+
+        //convert to an integer and enforce its positive
+        $addressId = intval($addressId);
+        if($addressId <= 0){
+            throw(new RangeException("address id $addressId is not positive"));
+        }
+
+        //create query template
+        $query = "SELECT addressId, addressLine, cityId, state, zipId FROM address WHERE addressId = ?";
+        $statement = $mysqli->prepare($query);
+        if($statement === false){
+            throw(new mysqli_sql_exception("Unable to prepare statement"));
+        }
+
+        //bind the address Id to the place holder in the template
+        $wasClean = $statement->bind_param("i", $addressId);
+        if($wasClean === false){
+            throw(new mysqli_sql_exception("Unable to bind parameters"));
+        }
+
+        //execute statement
+        if($statement->execute() === false){
+            throw(new mysqli_sql_exception("Unable to execute mySQL statement"));
+        }
+
+        //get results from SELECT query
+        $result = $statement->get_result();
+        if($result === false){
+            throw(new mysqli_sql_exception("Unable to get result set"));
+        }
+
+        /* since this is a unique field, this will only return 0 or 1 results so
+	     * 1) if there's a result, we can make it into a channel object normally
+		 * 2) if there's no result, we can just return null
+		 * */
+
+        $row = $result->fetch_assoc();
+
+        //convert the array to an address
+        if($row !== null){
+            try{
+                $address = new Address($row['addressId'],$row['addressLine'],$row['cityId'],$row['zipId'],$row['state']);
+
+            }catch(Exception $exception){
+                //if row can't be converted rethrow
+                $exception->getMessage();
+                throw(new mysqli_sql_exception("Unable to convert row into Address Object", 0, $exception));
+            }
+
+            //if we got here it is good, return it
+            return $address;
+
+        }else{
+            //404 Address Not Found
+            return(null);
+        }
+
+    }
+
+
+
 }
