@@ -237,4 +237,125 @@ class Address
         //remove from quarantine and assign
         $this->state = $newState;
     }
+
+    /**
+     * inserts this Address into mySQL
+     *
+     * @param resource $mysqli pointer to mySQL connection, by reference
+     * @throws mysqli_sql_exception when mySQL related errors occur
+     *
+     */
+
+    public function insert(&$mysqli){
+        //handle degernate cases
+        if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli"){
+            throw(new mysqli_sql_exception("input is not a mysqli object"));
+        }
+
+        //enforce the addressId is null (don't insert preexisting address)
+        if($this->addressId !== null){
+            throw(new mysqli_sql_exception("not a new address"));
+        }
+
+        try{
+            //create query template
+            $query = "INSERT INTO address(addressLine, state, cityId, zipId) VALUES(?,?,?,?)";
+            $statement = $mysqli->prepare($query);
+        }catch(Exception $e){
+            $e->getMessage()."Unable to Prepare Statement";
+        }
+
+        //bind the member variables to the place holders in the template
+        $wasClean = $statement->bind_param("ssii",$this->addressLine, $this->state, $this->cityId, $this->zipId);
+        if($wasClean === false){
+            throw (new mysqli_sql_exception("Unable to Bind Parameters"));
+        }
+
+        //execute the statement
+        try{
+            if($statement->execute() === false){
+                throw(new mysqli_sql_exception("Unable to Execute mySQL statement"));
+            }
+        }catch(Exception $exception){
+            $exception->getMessage();
+        }
+
+        $this->addressId = $mysqli->insert_id;
+    }
+
+    /**
+     * deletes the address from mySQL
+     *
+     * @param resource $mysqli ponter to mySQL connection, by reference
+     * @throws mysqli_sql_exception when mySQL related errors occur
+     *
+     */
+
+    public function delete(&$mysqli){
+        //handle degenerate cases
+        if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli"){
+            throw(new mysqli_sql_exception("input is not a mysqli object"));
+
+        }
+
+        //enforce the addressId is not null ( don't delete an address that hasnt been inserted)
+        if($this->addressId === null){
+            throw(new mysqli_sql_exception("Unable to delete a user that does not exist"));
+        }
+
+        //create query template
+        $query = "DELETE FROM address WHERE addressId = ?";
+        $statement = $mysqli->prepare($query);
+
+        if($statement === false){
+            throw(new mysqli_sql_exception("Unable to Prepare Statement"));
+        }
+
+        $wasClean = $statement->bind_param("i",$this->addressId);
+        if($wasClean === false){
+            throw(new mysqli_sql_exception("Unable to bind parameters"));
+        }
+
+        if($statement->execute() === false){
+            throw(new mysqli_sql_exception("Unable to execute mySQL statement"));
+        }
+
+    }
+
+    /**
+     * updates this address in mySQL
+     *
+     * @param resource $mysqli pointer to mySQL connection, by reference
+     * @throws mysqli_sql_exception when mySQL related error occurs
+     */
+    public function update(&$mysqli){
+        //handle degenerate cases
+        if(gettype($mysqli) !== "object" || get_class($mysqli) !== "mysqli"){
+            throw(new mysqli_sql_exception("input is not a mysqli object"));
+        }
+
+        //enforce that the id is not null (don't update an address that hasn't been inserted)
+        if($this->addressId === null){
+            throw(new mysqli_sql_exception("Unable to update an address that doesn't exist"));
+        }
+
+        //create query template
+        $query = "UPDATE address SET addressLine = ?, cityId = ?, state = ?, zipId = ? WHERE addressId = ?";
+        $statement = $mysqli->prepare($query);
+        if($statement === false){
+            throw(new mysqli_sql_exception("Unable to prepare statement"));
+
+        }
+
+        //bind the member variables to the place holders in the template
+        $wasClean = $statement->bind_param("sisii", $this->addressLine, $this->cityId, $this->state, $this->zipId, $this->addressId);
+        if($wasClean === false){
+            throw(new mysqli_sql_exception("Unable to bind parameters"));
+        }
+
+        //execute the statement
+        if($statement->execute() === false){
+            throw(new mysqli_sql_exception("Unable to execute mySQL statment"));
+        }
+    }
 }
