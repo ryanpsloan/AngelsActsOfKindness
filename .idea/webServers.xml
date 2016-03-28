@@ -2,8 +2,8 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="67eb8ec2-9eea-44ee-8bbc-93e15648cecc" name="AWS" url="http://52.37.65.215">
-        <fileTransfer host="52.37.65.215" port="22" privateKey="C:\Users\O\Desktop\PuTTy\opensshPrivateKey" rootFolder="/var/www/html" accessType="SFTP" passphrase="dfd9dff9df9bdf9fdf9edf9cdf99dfc2dfc1dfcfdfd3" username="ec2-user" keyPair="true">
+      <webServer id="67eb8ec2-9eea-44ee-8bbc-93e15648cecc" name="AWS" url="http://52.26.82.64">
+        <fileTransfer host="52.26.82.64" port="22" privateKey="C:\Users\O\Desktop\PuTTy\opensshPrivateKey" rootFolder="/var/www/html" accessType="SFTP" passphrase="dfd9dff9df9bdf9fdf9edf9cdf99dfc2dfc1dfcfdfd3" username="ec2-user" keyPair="true">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>

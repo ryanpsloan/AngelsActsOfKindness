@@ -32,7 +32,8 @@ CREATE TABLE zipcode (
   zipId INT UNSIGNED NOT NULL AUTO_INCREMENT,
   zipCode VARCHAR(32) NOT NULL,
   PRIMARY KEY(zipId),
-  INDEX (zipcode)
+  INDEX (zipCode),
+  UNIQUE(zipCode)
 
 
 );

@@ -50,7 +50,48 @@ class ZipCode{
     public function getZipCode(){
         return $this->zipCode;
     }
+    /*****
+     * sets the value of zidId
+     * @param $newZipId null or int
+     * @throws UnexpectedValueException if $newZipId is not an int or null
+     * @throws RangeException if $newZipId is not positive
+     *
+     */
+    public function setZipId($newZipId){
+        if($newZipId === null){
+            $this->zipId = null;
+            return;
+        }
 
+        if(filter_var($newZipId, FILTER_VALIDATE_INT) === false){
+            throw(new UnexpectedValueException("zipId $newZipId is not an integer"));
+        }
+
+        $newZipId = intval($newZipId);
+
+        if($newZipId <= 0){
+            throw(new RangeException("zipId $newZipId is not positive"));
+        }
+
+        $this->zipId = $newZipId;
+    }
+
+    /***
+     * sets the value of zipCode
+     *
+     * @param $newZipCode string
+     *
+     * @throws UnexpectedValueException if not a string
+     *
+     */
+
+      public function setZipCode($newZipCode){
+          $newZipCode = trim($newZipCode);
+          if(filter_var($newZipCode, FILTER_SANITIZE_STRING)){
+              throw(new UnexpectedValueException("zipCode $newZipCode is not a string"));
+          }
+          $this->zipCode = $newZipCode;
+      }
 
 
 }
